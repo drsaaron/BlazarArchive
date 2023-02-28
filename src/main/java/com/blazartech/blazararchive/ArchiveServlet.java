@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,9 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
     @Value("${data.root}")
     private String dataRoot;
+    
+    @Autowired
+    private ArchiveFile archiveFile;
     
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -53,7 +57,19 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
         byte[] content = req.getInputStream().readAllBytes();
 
-        try (FileOutputStream os = new FileOutputStream(new File(dataRoot + "/" + req.getRequestURI().replace("/", "-")))) {
+        ArchiveFileDescriptor archiveFileDescriptor = archiveFile.getArchiveFileDescriptor(req.getRequestURI());
+        String filePath = archiveFileDescriptor.getFilePath();
+        File savedFile = new File(filePath);
+        String directoryPath = archiveFileDescriptor.getFileDirectory();
+        log.info("directory = {}", directoryPath);
+        File directory = new File(directoryPath);
+        if (directory.exists()) {
+            log.info("directory {} exists", directoryPath);
+        } else {
+            log.info("creating new file " + savedFile.getAbsolutePath());
+            directory.mkdirs();
+        }
+        try (FileOutputStream os = new FileOutputStream(savedFile)) {
             os.write(content);
         }
 
