@@ -6,6 +6,7 @@ package com.blazartech.blazararchive;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +19,15 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class ServletRegistrationConfiguration {
     
+    @Value("${servlet.mapping}")
+    private String servletMapping;
+    
+    @Autowired
+    private ArchiveServlet archiveServlet;
+    
     @Bean
     public ServletRegistrationBean exampleServletBean() {
-        ServletRegistrationBean bean = new ServletRegistrationBean(new ArchiveServlet(), "/repository/maven-releases/*");
+        ServletRegistrationBean bean = new ServletRegistrationBean(archiveServlet, servletMapping + "/*");
         bean.setLoadOnStartup(1);
         log.info("servlet registered");
         return bean;

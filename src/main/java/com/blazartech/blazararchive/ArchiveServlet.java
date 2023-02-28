@@ -18,15 +18,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author aar1069
  */
-//@Component
+@Component
 @Slf4j
 public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
+    @Value("${data.root}")
+    private String dataRoot;
+    
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("doPut");
@@ -48,7 +53,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
         byte[] content = req.getInputStream().readAllBytes();
 
-        try (FileOutputStream os = new FileOutputStream(new File("/tmp/" + req.getRequestURI().replace("/", "-")))) {
+        try (FileOutputStream os = new FileOutputStream(new File(dataRoot + "/" + req.getRequestURI().replace("/", "-")))) {
             os.write(content);
         }
 
