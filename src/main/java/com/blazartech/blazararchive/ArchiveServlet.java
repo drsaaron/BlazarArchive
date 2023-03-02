@@ -108,29 +108,26 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
                 }
 
                 // do MD5 and SHA1
-                try {
-                    MessageDigest md5 = MessageDigest.getInstance("MD5");
-                    md5.update(stringResult.toString().getBytes());
-                    String md5Hash = DatatypeConverter.printHexBinary(md5.digest()).toUpperCase();
-                    String md5String = md5Hash + " " + "maven-metadata.xml.md5";
-                    try (FileOutputStream md5os = new FileOutputStream(new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.md5"))) {
-                        md5os.write(md5String.getBytes());
-                    }
-                    
-                    MessageDigest sha1 = MessageDigest.getInstance(("SHA-1"));
-                    sha1.update(stringResult.toString().getBytes());
-                    String sha1Hash = DatatypeConverter.printHexBinary(sha1.digest()).toUpperCase();
-                    String sha1String = sha1Hash + " " + "maven-metadata.xml.sha1";
-                    try (FileOutputStream sha1os = new FileOutputStream(new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.sha1"))) {
-                        sha1os.write(sha1String.getBytes());
-                    }
-                } catch (NoSuchAlgorithmException e) {
-                    throw new RuntimeException("error MD5-ing: " + e.getMessage(), e);
-                }
+                saveDigest("MD5", archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.md5", stringResult.toString());
+                saveDigest("SHA-1", archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.sha1", stringResult.toString());
             }
         }
 
         resp.getWriter().print("putted");
+    }
+
+    private void saveDigest(String digestType, String root, String fileName, String metadata) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance(digestType);
+            digest.update(metadata.getBytes());
+            String digestHash = DatatypeConverter.printHexBinary(digest.digest()).toUpperCase();
+            String digestString = digestHash + " " + fileName;
+            try (FileOutputStream md5os = new FileOutputStream(new File(root, fileName))) {
+                md5os.write(digestString.getBytes());
+            }
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException("error saving digest: " + e.getMessage(), e);
+        }
     }
 
     @Override
