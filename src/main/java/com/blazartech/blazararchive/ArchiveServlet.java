@@ -15,15 +15,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,31 +46,16 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("doPut");
 
-        Enumeration<String> reqEnum = req.getHeaderNames();
-        List<String> headers = new ArrayList<>();
-        while (reqEnum.hasMoreElements()) {
-            String h = reqEnum.nextElement();
-            headers.add(h);
-        }
-        String headerString = headers.stream().collect(Collectors.joining(","));
-
-        log.info("req query string = " + req.getQueryString());
-        log.info("req path = " + req.getRequestURI());
-        log.info("req header anmes = " + headerString);
-
-        int bodySize = req.getIntHeader("content-length");
-        log.info("bodySize = " + bodySize);
-
         byte[] content = req.getInputStream().readAllBytes();
 
         ArchiveFileDescriptor archiveFileDescriptor = archiveFile.getArchiveFileDescriptor(req.getRequestURI());
         String filePath = archiveFileDescriptor.getFilePath();
         File savedFile = new File(filePath);
         String directoryPath = archiveFileDescriptor.getFileDirectory();
-        log.info("directory = {}", directoryPath);
         File directory = new File(directoryPath);
         if (directory.exists()) {
             log.info("directory {} exists", directoryPath);
+            resp.sendError(HttpStatus.BAD_REQUEST.value(), "object " + archiveFileDescriptor.getArtifact() + " already archived");
         } else {
             log.info("creating new file " + savedFile.getAbsolutePath());
             directory.mkdirs();
@@ -152,18 +136,6 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("doGet");
-
-        Enumeration<String> reqEnum = req.getHeaderNames();
-        List<String> headers = new ArrayList<>();
-        while (reqEnum.hasMoreElements()) {
-            String h = reqEnum.nextElement();
-            headers.add(h);
-        }
-        String headerString = headers.stream().collect(Collectors.joining(","));
-
-        log.info("req query string = " + req.getQueryString());
-        log.info("req path = " + req.getRequestURI());
-        log.info("req header anmes = " + headerString);
 
         String localFile = req.getRequestURI().replaceFirst(servletMapping, dataRoot);
         log.info("returning {}", localFile);
