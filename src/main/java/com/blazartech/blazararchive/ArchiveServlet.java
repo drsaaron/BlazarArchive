@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +46,9 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
     @Autowired
     private Jaxb2Marshaller marshaller;
+    
+    @Autowired
+    private MetadataFileReader metadataFileReader;
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -87,13 +88,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
             if (archiveFileDescriptor.getArtifact().endsWith((".jar"))) {
                 // update meta data
-                MavenMetadata metadata = new MavenMetadata();
-                File metadataFile = new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml");
-                if (metadataFile.exists()) {
-                    Source metadataFileSource = new StreamSource(metadataFile);
-                    metadata = (MavenMetadata) marshaller.unmarshal(metadataFileSource);
-                }
-                log.info("metadata = " + metadata);
+                MavenMetadata metadata = metadataFileReader.readMetadataFile(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml");
 
                 metadata.setArtifactId(archiveFileDescriptor.getArtifact().replace(".jar", "").replace(archiveFileDescriptor.getVersion(), ""));
                 metadata.setGroupId(archiveFileDescriptor.getGroup());
@@ -103,7 +98,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
                 StringResult stringResult = new StringResult();
                 marshaller.marshal(metadata, stringResult);
 
-                try (FileOutputStream metaOs = new FileOutputStream(metadataFile.getAbsolutePath())) {
+                try (FileOutputStream metaOs = new FileOutputStream(metadataFileReader.getMetadataFile(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml").getAbsolutePath())) {
                     metaOs.write(stringResult.toString().getBytes());
                 }
 
