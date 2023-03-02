@@ -19,4 +19,5 @@ public class ArchiveFileDescriptor {
     private String filePath;
     private String fileDirectory;
     private String archiveRoot;
+    private String group;
 }

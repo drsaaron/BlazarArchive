@@ -16,11 +16,14 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
+import org.springframework.xml.transform.StringResult;
 
 /**
  *
@@ -30,12 +33,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
-    @Value("${data.root}")
-    private String dataRoot;
-    
     @Autowired
     private ArchiveFile archiveFile;
-    
+
+    @Autowired
+    private Jaxb2Marshaller marshaller;
+
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("doPut");
@@ -71,6 +74,28 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
         }
         try (FileOutputStream os = new FileOutputStream(savedFile)) {
             os.write(content);
+
+            if (archiveFileDescriptor.getArtifact().endsWith((".jar"))) {
+                // update meta data
+                MavenMetadata metadata = new MavenMetadata();
+                File metadataFile = new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml");
+                if (metadataFile.exists()) {
+                    Source metadataFileSource = new StreamSource(metadataFile);
+                    metadata = (MavenMetadata) marshaller.unmarshal(metadataFileSource);
+                }
+                log.info("metadata = " + metadata);
+
+                metadata.setArtifactId(archiveFileDescriptor.getArtifact().replace(".jar", "").replace(archiveFileDescriptor.getVersion(), ""));
+                metadata.setGroupId(archiveFileDescriptor.getGroup());
+                metadata.getMetadataVersioning().getVersions().add(archiveFileDescriptor.getVersion());
+
+                StringResult stringResult = new StringResult();
+                marshaller.marshal(metadata, stringResult);
+
+                try (FileOutputStream metaOs = new FileOutputStream(metadataFile.getAbsolutePath())) {
+                    metaOs.write(stringResult.toString().getBytes());
+                }
+            }
         }
 
         resp.getWriter().print("putted");
@@ -85,7 +110,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("doGet");
-        
+
         Enumeration<String> reqEnum = req.getHeaderNames();
         List<String> headers = new ArrayList<>();
         while (reqEnum.hasMoreElements()) {
@@ -97,7 +122,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
         log.info("req query string = " + req.getQueryString());
         log.info("req path = " + req.getRequestURI());
         log.info("req header anmes = " + headerString);
-        
+
         try (FileInputStream is = new FileInputStream(new File("/tmp/" + req.getRequestURI().replace("/", "-")))) {
             byte[] content = is.readAllBytes();
             resp.getOutputStream().write(content);

@@ -5,6 +5,9 @@
 package com.blazartech.blazararchive;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,6 +37,13 @@ public class ArchiveFileImpl implements ArchiveFile {
         descriptor.setName(pieces[n-3]);
         descriptor.setVersion(pieces[n-2]);
         descriptor.setFilePath(dataRoot + "/" + resourcePath);
+        
+        List<String> groupPieces = new ArrayList<>();
+        for (int i = 0; i < n - 3; i++) {
+            groupPieces.add(pieces[i]);
+        }
+        String group = groupPieces.stream().collect(Collectors.joining("."));
+        descriptor.setGroup(group);
         
         File savedFile = new File(descriptor.getFilePath());
         descriptor.setFileDirectory(savedFile.toPath().getParent().toString());        
