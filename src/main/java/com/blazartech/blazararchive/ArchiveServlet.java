@@ -8,10 +8,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -36,7 +39,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
     @Value("${data.root}")
     private String dataRoot;
-    
+
     @Value("${servlet.mapping}")
     private String servletMapping;
 
@@ -102,6 +105,27 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
                 try (FileOutputStream metaOs = new FileOutputStream(metadataFile.getAbsolutePath())) {
                     metaOs.write(stringResult.toString().getBytes());
+                }
+
+                // do MD5 and SHA1
+                try {
+                    MessageDigest md5 = MessageDigest.getInstance("MD5");
+                    md5.update(stringResult.toString().getBytes());
+                    String md5Hash = DatatypeConverter.printHexBinary(md5.digest()).toUpperCase();
+                    String md5String = md5Hash + " " + "maven-metadata.xml.md5";
+                    try (FileOutputStream md5os = new FileOutputStream(new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.md5"))) {
+                        md5os.write(md5String.getBytes());
+                    }
+                    
+                    MessageDigest sha1 = MessageDigest.getInstance(("SHA-1"));
+                    sha1.update(stringResult.toString().getBytes());
+                    String sha1Hash = DatatypeConverter.printHexBinary(sha1.digest()).toUpperCase();
+                    String sha1String = sha1Hash + " " + "maven-metadata.xml.sha1";
+                    try (FileOutputStream sha1os = new FileOutputStream(new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.sha1"))) {
+                        sha1os.write(sha1String.getBytes());
+                    }
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException("error MD5-ing: " + e.getMessage(), e);
                 }
             }
         }
