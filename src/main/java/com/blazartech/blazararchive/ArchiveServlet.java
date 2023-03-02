@@ -95,6 +95,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
                 metadata.setArtifactId(archiveFileDescriptor.getArtifact().replace(".jar", "").replace(archiveFileDescriptor.getVersion(), ""));
                 metadata.setGroupId(archiveFileDescriptor.getGroup());
                 metadata.getMetadataVersioning().getVersions().add(archiveFileDescriptor.getVersion());
+                metadata.getMetadataVersioning().setLatest(archiveFileDescriptor.getVersion());
 
                 StringResult stringResult = new StringResult();
                 marshaller.marshal(metadata, stringResult);

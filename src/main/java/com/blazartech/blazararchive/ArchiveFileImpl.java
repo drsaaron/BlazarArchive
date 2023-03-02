@@ -42,7 +42,9 @@ public class ArchiveFileImpl implements ArchiveFile {
         for (int i = 0; i < n - 3; i++) {
             groupPieces.add(pieces[i]);
         }
-        String group = groupPieces.stream().collect(Collectors.joining("."));
+        String group = groupPieces.stream()
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.joining("."));
         descriptor.setGroup(group);
         
         File savedFile = new File(descriptor.getFilePath());
