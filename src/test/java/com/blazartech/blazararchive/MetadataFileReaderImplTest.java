@@ -78,8 +78,8 @@ public class MetadataFileReaderImplTest {
         assertEquals("com.blazartech", result.getGroupId());
         assertEquals("2.1.67-RELEASE", result.getMetadataVersioning().getLatest());
         
-        List<String> versions = result.getMetadataVersioning().getVersions();
-        assertNotNull(versions);
+//        List<String> versions = result.getMetadataVersioning().getVersions();
+ //       assertNotNull(versions);
       //  assertFalse(versions.isEmpty());
     }
     

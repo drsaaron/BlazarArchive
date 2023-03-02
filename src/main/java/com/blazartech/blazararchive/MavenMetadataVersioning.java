@@ -7,6 +7,7 @@ package com.blazartech.blazararchive;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,6 @@ public class MavenMetadataVersioning {
     @XmlElement(name = "release")
     private String release = "";
     
-    @XmlElement(name = "version")
+    @XmlElementWrapper(name = "versions")
     private List<String> versions = new ArrayList<>();
 }
