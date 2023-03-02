@@ -21,6 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.xml.transform.StringResult;
@@ -32,6 +33,12 @@ import org.springframework.xml.transform.StringResult;
 @Component
 @Slf4j
 public class ArchiveServlet extends HttpServlet implements InitializingBean {
+
+    @Value("${data.root}")
+    private String dataRoot;
+    
+    @Value("${servlet.mapping}")
+    private String servletMapping;
 
     @Autowired
     private ArchiveFile archiveFile;
@@ -123,7 +130,9 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
         log.info("req path = " + req.getRequestURI());
         log.info("req header anmes = " + headerString);
 
-        try (FileInputStream is = new FileInputStream(new File("/tmp/" + req.getRequestURI().replace("/", "-")))) {
+        String localFile = req.getRequestURI().replaceFirst(servletMapping, dataRoot);
+        log.info("returning {}", localFile);
+        try (FileInputStream is = new FileInputStream(localFile)) {
             byte[] content = is.readAllBytes();
             resp.getOutputStream().write(content);
         }
