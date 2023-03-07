@@ -55,5 +55,7 @@ esac
 
 # start 'er up
 portConnector="-p $port:$port"
+dataDir=~/blazar-archive/repository
+[ -d $dataDir ] || mkdir -p $dataDir
 [ -n "$managementPort" ] && portConnector="$portConnector -p $managementPort:$managementPort"
-docker run -d --name $containerName -v ~/blazar-archive/repository:/archive-data $portConnector $userFlag $imageName:$imageVersion
+docker run -d --name $containerName -v $dataDir:/archive-data $portConnector $userFlag $imageName:$imageVersion
