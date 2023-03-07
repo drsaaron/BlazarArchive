@@ -1,8 +1,5 @@
 #! /bin/sh
 
-imageName=drsaaron/$(getPomAttribute.sh artifactId | tr '[[:upper:]]' '[[:lower:]]')
-version=$(getPomAttribute.sh version | sed 's/-RELEASE//')
-
 while getopts :fv:n: OPTION
 do
     case $OPTION in
