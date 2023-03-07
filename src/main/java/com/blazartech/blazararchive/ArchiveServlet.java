@@ -61,7 +61,7 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
         // the directory for storage and initialize the metadata files.
         if (directory.exists()) {
             // ensure no duplicates
-            if (savedFile.exists() && archiveFileDescriptor.getArtifact().endsWith(".jar")) {
+            if (savedFile.exists() && (archiveFileDescriptor.getArtifact().endsWith(".jar") || archiveFileDescriptor.getArtifact().endsWith(".pom"))) {
                 log.info("saved file {} already exists", filePath);
                 resp.sendError(HttpStatus.BAD_REQUEST.value(), "object " + archiveFileDescriptor.getArtifact() + " already archived");
                 return;
