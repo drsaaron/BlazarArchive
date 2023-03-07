@@ -1,4 +1,4 @@
-#! /bin/sh 
+#! /bin/sh -x
 
 while getopts :cf OPTION
 do
@@ -44,7 +44,16 @@ then
     exit 1
 fi
 
+# handle user
+case $(uname -s) in
+    Linux)
+	userFlag="$(id -u):$(id -g)"
+	;;
+    *)
+	userFlag=""
+esac
+
 # start 'er up
 portConnector="-p $port:$port"
 [ -n "$managementPort" ] && portConnector="$portConnector -p $managementPort:$managementPort"
-docker run -d --name $containerName -v ~/blazar-archive/repository:/archive-data $portConnector $imageName:$imageVersion
+docker run -d --name $containerName -v ~/blazar-archive/repository:/archive-data $portConnector $userFlag $imageName:$imageVersion
