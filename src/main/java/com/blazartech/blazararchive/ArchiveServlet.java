@@ -128,6 +128,14 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
         log.info("doGet");
 
         String localFile = req.getRequestURI().replaceFirst(servletMapping, dataRoot);
+        
+        // ensure the file exists
+        File lf = new File(localFile);
+        if (!lf.exists()) {
+            resp.sendError(HttpStatus.NOT_FOUND.value(), "file not found");
+            return;
+        }
+        
         log.info("returning {}", localFile);
         try (FileInputStream is = new FileInputStream(localFile)) {
             byte[] content = is.readAllBytes();
