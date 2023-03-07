@@ -4,14 +4,11 @@
  */
 package com.blazartech.blazararchive;
 
-import java.io.File;
-
 /**
  *
  * @author aar1069
  */
-public interface MetadataFileReader {
+public interface MavenMetadataXMLBuilder {
     
-    public MavenMetadata readMetadataFile(String directory, String file);
-    public File getMetadataFile(String directory, String file);
+    public String buildXML(MavenMetadata metadata);
 }

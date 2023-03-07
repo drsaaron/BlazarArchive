@@ -42,6 +42,9 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
     @Autowired
     private ArchiveFile archiveFile;
 
+    @Autowired
+    private MavenMetadataXMLBuilder xmlBuilder;
+
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("doPut");
@@ -53,61 +56,54 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
         File savedFile = new File(filePath);
         String directoryPath = archiveFileDescriptor.getFileDirectory();
         File directory = new File(directoryPath);
+        
+        // does the directory exist?  If yes, ensure we have no duplicates.  Else create
+        // the directory for storage and initialize the metadata files.
         if (directory.exists()) {
-            log.info("directory {} exists", directoryPath);
-            resp.sendError(HttpStatus.BAD_REQUEST.value(), "object " + archiveFileDescriptor.getArtifact() + " already archived");
+            // ensure no duplicates
+            if (savedFile.exists() && archiveFileDescriptor.getArtifact().endsWith(".jar")) {
+                log.info("saved file {} already exists", filePath);
+                resp.sendError(HttpStatus.BAD_REQUEST.value(), "object " + archiveFileDescriptor.getArtifact() + " already archived");
+            }
         } else {
             log.info("creating new file " + savedFile.getAbsolutePath());
             directory.mkdirs();
+
+            // initialize the meta data from scratch
+            MavenMetadata metadata = new MavenMetadata();
+            File metadataFile = new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml");
+
+            metadata.setArtifactId(archiveFileDescriptor.getArtifact().replace(".jar", "").replace(archiveFileDescriptor.getVersion(), ""));
+            metadata.setGroupId(archiveFileDescriptor.getGroup());
+            metadata.getMetadataVersioning().setLatest(archiveFileDescriptor.getVersion());
+
+            File metadataFileDirectory = new File(archiveFileDescriptor.getArchiveRoot());
+            List<File> directoryContents = Arrays.asList(metadataFileDirectory.listFiles());
+            List<String> versions = directoryContents.stream()
+                    .map(f -> f.getAbsoluteFile())
+                    .filter(f -> f.isDirectory())
+                    .map(d -> d.getAbsolutePath().replace(archiveFileDescriptor.getArchiveRoot() + "/", ""))
+                    .collect(Collectors.toList());
+            log.info("found version list " + versions);
+            metadata.getMetadataVersioning().setVersions(versions);
+            log.info("metadata = {}", metadata);
+
+            // build the meta data file manually as jaxb doesn't seem to the array of versions
+            String metadataXml = xmlBuilder.buildXML(metadata);
+
+            try (FileOutputStream metaOs = new FileOutputStream(metadataFile)) {
+                metaOs.write(metadataXml.getBytes());
+            }
+
+            // do MD5 and SHA1
+            saveDigest("MD5", archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.md5", metadataXml);
+            saveDigest("SHA-1", archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.sha1", metadataXml);
+
         }
+        
+        // save the file
         try (FileOutputStream os = new FileOutputStream(savedFile)) {
             os.write(content);
-
-            if (archiveFileDescriptor.getArtifact().endsWith((".jar"))) {
-                // build meta data from scratch
-                MavenMetadata metadata = new MavenMetadata();
-                File metadataFile = new File(archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml");
-                
-                metadata.setArtifactId(archiveFileDescriptor.getArtifact().replace(".jar", "").replace(archiveFileDescriptor.getVersion(), ""));
-                metadata.setGroupId(archiveFileDescriptor.getGroup());
-                metadata.getMetadataVersioning().setLatest(archiveFileDescriptor.getVersion());
-                
-                File metadataFileDirectory = new File(archiveFileDescriptor.getArchiveRoot());
-                List<File> directoryContents = Arrays.asList(metadataFileDirectory.listFiles());
-                List<String> versions = directoryContents.stream()
-                        .map(f -> f.getAbsoluteFile())
-                        .filter(f -> f.isDirectory())
-                        .map(d -> d.getAbsolutePath().replace(archiveFileDescriptor.getArchiveRoot() + "/", ""))
-                        .collect(Collectors.toList());
-                log.info("found version list " + versions);
-                metadata.getMetadataVersioning().setVersions(versions);
-                log.info("metadata = {}", metadata);
-                
-                // build the meta data file manually as jaxb doesn't seem to the array of versions
-                String versionListXML = versions.stream()
-                        .map(v -> "<version>" + v + "</version>")
-                        .collect(Collectors.joining("\n"));
-                
-                String metadataXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<metadata>\n" +
-"  <groupId>" + metadata.getGroupId() + "</groupId>\n" +
-"  <artifactId>" + metadata.getArtifactId() + "</artifactId>\n" +
-"  <versioning>\n" +
-"    <latest>" + metadata.getMetadataVersioning().getLatest() + "</latest>\n" +
-"    <release>" + metadata.getMetadataVersioning().getRelease() + "</release>\n" +
-"    <versions>" + versionListXML + "</versions>\n" +
-"    <lastUpdated>" + metadata.getMetadataVersioning().getLatest() + "</lastUpdated>\n" +
-"  </versioning>\n" +
-"</metadata>";
-
-                try (FileOutputStream metaOs = new FileOutputStream(metadataFile)) {
-                    metaOs.write(metadataXml.getBytes());
-                }
-
-                // do MD5 and SHA1
-                saveDigest("MD5", archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.md5", metadataXml);
-                saveDigest("SHA-1", archiveFileDescriptor.getArchiveRoot(), "maven-metadata.xml.sha1", metadataXml);
-            }
         }
 
         resp.getWriter().print("putted");
@@ -128,12 +124,6 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.info("doPost");
-        super.doPost(req, resp); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
-    }
-
-    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("doGet");
 
@@ -143,24 +133,6 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
             byte[] content = is.readAllBytes();
             resp.getOutputStream().write(content);
         }
-    }
-
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.info("doOptions");
-        super.doOptions(req, resp); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.info("doDelete");
-        super.doDelete(req, resp); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
-    }
-
-    @Override
-    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.info("doHead");
-        super.doHead(req, resp); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
     }
 
     @Override
