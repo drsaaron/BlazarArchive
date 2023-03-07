@@ -3,7 +3,7 @@ from drsaaron/blazarjavabase:1.14
 ENV ENVIRONMENT=prod
 
 ADD ./pom.xml ./pom.xml
-ADD ./mnvw ./mvnw
+ADD ./mvnw ./mvnw
 ADD ./.mvn ./.mvn
 ADD ./src ./src
 
