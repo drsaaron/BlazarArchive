@@ -1,7 +1,7 @@
 #! /bin/sh
 
-imageName=drsaaron/blazararchive
-imageVersion=0.2
+imageName=drsaaron/$(getPomAttribute.sh artifactId | tr '[[:upper:]]' '[[:lower:]]')
+imageVersion=$(getPomAttribute.sh version | sed 's/-RELEASE//')
 containerName=blazararchive
 
 docker stop $containerName
