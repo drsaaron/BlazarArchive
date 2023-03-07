@@ -1,4 +1,4 @@
-#! /bin/sh -x
+#! /bin/sh 
 
 while getopts :cf OPTION
 do
