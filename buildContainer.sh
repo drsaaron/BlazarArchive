@@ -47,7 +47,7 @@ fi
 # handle user
 case $(uname -s) in
     Linux)
-	userFlag="$(id -u):$(id -g)"
+	userFlag="--user $(id -u):$(id -g)"
 	;;
     *)
 	userFlag=""
