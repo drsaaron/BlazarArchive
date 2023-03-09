@@ -15,7 +15,7 @@ do
     esac
 done
 
-artifactName=$(getPomAttribute.sh artifactId | tr '[[:upper:]]' '[[:lower:]]')
+artifactName=$(getPomAttribute.sh artifactId | tr '[:upper:]' '[:lower:]')
 imageName=drsaaron/$artifactName
 containerName=$artifactName
 
