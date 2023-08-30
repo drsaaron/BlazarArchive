@@ -4,6 +4,7 @@
  */
 package com.blazartech.blazararchive;
 
+import jakarta.servlet.http.HttpServlet;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,7 @@ public class ServletRegistrationConfiguration {
     private String servletMapping;
     
     @Autowired
-    private ArchiveServlet archiveServlet;
+    private HttpServlet archiveServlet;
     
     @Bean
     public ServletRegistrationBean exampleServletBean() {
