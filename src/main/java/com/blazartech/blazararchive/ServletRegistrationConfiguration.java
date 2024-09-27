@@ -28,7 +28,7 @@ public class ServletRegistrationConfiguration {
     
     @Bean
     public ServletRegistrationBean exampleServletBean() {
-        ServletRegistrationBean bean = new ServletRegistrationBean(archiveServlet, servletMapping + "/*");
+        ServletRegistrationBean<HttpServlet> bean = new ServletRegistrationBean<>(archiveServlet, servletMapping + "/*");
         bean.setLoadOnStartup(1);
         log.info("servlet registered");
         return bean;

@@ -12,9 +12,9 @@
     </properties>
     
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
+        <groupId>com.blazartech</groupId>
+        <artifactId>blazarjavaparent</artifactId>
+        <version>1.0-RELEASE</version>
     </parent>
     
     <description>an incredibly simplistic and inelegant artifact manager</description>
