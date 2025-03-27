@@ -8,7 +8,6 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import lombok.Data;
 
 /**
  *
@@ -16,7 +15,6 @@ import lombok.Data;
  */
 @XmlRootElement(name = "metadata")
 @XmlAccessorType(XmlAccessType.FIELD)
-@Data
 public class MavenMetadata {
     
     @XmlElement(name = "groupId")
@@ -27,4 +25,30 @@ public class MavenMetadata {
     
     @XmlElement(name = "versioning")
     private MavenMetadataVersioning metadataVersioning = new MavenMetadataVersioning();
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    public MavenMetadataVersioning getMetadataVersioning() {
+        return metadataVersioning;
+    }
+
+    public void setMetadataVersioning(MavenMetadataVersioning metadataVersioning) {
+        this.metadataVersioning = metadataVersioning;
+    }
+    
+    
 }

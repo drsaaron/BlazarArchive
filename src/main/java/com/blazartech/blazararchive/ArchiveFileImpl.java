@@ -8,7 +8,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +18,10 @@ import org.springframework.stereotype.Component;
  * @author aar1069
  */
 @Component
-@Slf4j
 public class ArchiveFileImpl implements ArchiveFile {
 
+    private static final Logger log = LoggerFactory.getLogger(ArchiveFileImpl.class);
+    
     @Value("${servlet.mapping}")
     private String servletMapping;
     

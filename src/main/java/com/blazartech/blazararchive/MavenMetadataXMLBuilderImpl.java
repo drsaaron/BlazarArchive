@@ -6,7 +6,8 @@ package com.blazartech.blazararchive;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,9 +15,10 @@ import org.springframework.stereotype.Component;
  * @author aar1069
  */
 @Component
-@Slf4j
 public class MavenMetadataXMLBuilderImpl implements MavenMetadataXMLBuilder {
 
+    private static final Logger log = LoggerFactory.getLogger(MavenMetadataXMLBuilderImpl.class);
+    
     @Override
     public String buildXML(MavenMetadata metadata) {
 

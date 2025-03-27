@@ -11,7 +11,6 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Data;
 
 /**
  *
@@ -19,7 +18,6 @@ import lombok.Data;
  */
 @XmlRootElement(name = "versioning")
 @XmlAccessorType(XmlAccessType.FIELD)
-@Data
 public class MavenMetadataVersioning {
     
     @XmlElement(name = "latest")
@@ -30,4 +28,30 @@ public class MavenMetadataVersioning {
     
     @XmlElementWrapper(name = "versions")
     private List<String> versions = new ArrayList<>();
+
+    public String getLatest() {
+        return latest;
+    }
+
+    public void setLatest(String latest) {
+        this.latest = latest;
+    }
+
+    public String getRelease() {
+        return release;
+    }
+
+    public void setRelease(String release) {
+        this.release = release;
+    }
+
+    public List<String> getVersions() {
+        return versions;
+    }
+
+    public void setVersions(List<String> versions) {
+        this.versions = versions;
+    }
+    
+    
 }
