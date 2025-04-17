@@ -30,10 +30,6 @@ port=$(grep -E '^ *server.port' src/main/resources/prod.properties | awk -F= '{ 
 # if there's a management port, grab it too
 managementPort=$(grep -E '^ *management.server.port' src/main/resources/prod.properties | awk -F= '{ print $2 }' | sed 's/ *$//')
 
-# remove the current version
-docker stop $containerName
-docker rm $containerName
-
 # build the image
 [ "$forceBuild" = "true" ] && extraArgs="-f"
 [ "${skipBuild:-false}" = "true" ] || buildDocker.sh -v $imageVersion -n $imageName $extraArgs
@@ -52,6 +48,10 @@ case $(uname -s) in
     *)
 	userFlag=""
 esac
+
+# remove the current version
+docker stop $containerName
+docker rm $containerName
 
 # start 'er up
 portConnector="-p $port:$port"
