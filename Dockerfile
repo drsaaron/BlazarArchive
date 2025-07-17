@@ -1,4 +1,4 @@
-from drsaaron/blazarjavabase:1.55
+FROM drsaaron/blazarjavabase:1.55
 
 ENV ENVIRONMENT=prod
 
@@ -14,4 +14,4 @@ RUN mvnw clean install
 ENV SERVER_PORT=8081
 HEALTHCHECK CMD curl --silent --fail http://localhost:$SERVER_PORT/monitoring/health || exit 1
 
-CMD ./runBlazarService.sh
+CMD ["./runBlazarService.sh"]
