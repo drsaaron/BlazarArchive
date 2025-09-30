@@ -3,18 +3,18 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.blazartech</groupId>
     <artifactId>BlazarArchive</artifactId>
-    <version>1.43-RELEASE</version>
+    <version>1.44-RELEASE</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <exec.mainClass>com.blazartech.blazararchive.Main</exec.mainClass>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
     </properties>
     
     <parent>
         <groupId>com.blazartech</groupId>
         <artifactId>blazarjavaparent</artifactId>
-        <version>1.12-RELEASE</version>
+        <version>1.13-RELEASE</version>
     </parent>
     
     <description>an incredibly simplistic and inelegant artifact manager</description>
