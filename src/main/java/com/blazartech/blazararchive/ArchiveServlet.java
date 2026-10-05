@@ -128,14 +128,19 @@ public class ArchiveServlet extends HttpServlet implements InitializingBean {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log.info("doGet");
+        log.info("doGet: {}", req.getRequestURI());
 
         String localFile = req.getRequestURI().replaceFirst(servletMapping, dataRoot);
         
-        // ensure the file exists
+        // ensure the file exists.  We cannot just do a resp.sendError anymore because
+        // that will send a JSON response which will cause maven to fail for snapshots.
+        // sending content length 0, maven will handle things correctly for snapshots
+        // and releases.  I suppose I should really handle snapshots correctly, but this
+        // is supposed to be inelegant and hacky.
         File lf = new File(localFile);
         if (!lf.exists()) {
-            resp.sendError(HttpStatus.NOT_FOUND.value(), "file not found");
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.setContentLength(0);
             return;
         }
         
