@@ -58,4 +58,8 @@ portConnector="-p $port:$port"
 dataDir=~/blazar-archive/repository
 [ -d $dataDir ] || mkdir -p $dataDir
 [ -n "$managementPort" ] && portConnector="$portConnector -p $managementPort:$managementPort"
-docker run -d --name $containerName -v $dataDir:/archive-data $portConnector $userFlag $imageName:$imageVersion
+docker run -d \
+       --name $containerName \
+       --health-cmd="curl --silent --fail http://localhost:$port/monitoring/health || exit 1" \
+       -v $dataDir:/archive-data \
+       $portConnector $userFlag $imageName:$imageVersion
